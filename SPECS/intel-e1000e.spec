@@ -8,10 +8,15 @@
 
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
-Version: 3.4.0.2
+Version: 3.4.2.1
 Release: 1%{?dist}
 License: GPL
-Source: https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-%{name}/archive?at=%{version}&format=tgz&prefix=driver-%{name}-%{version}#/%{name}-%{version}.tar.gz
+
+Source0: https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-e1000e/archive?at=3.4.2.1&format=tgz&prefix=driver-intel-e1000e-3.4.2.1#/intel-e1000e-3.4.2.1.tar.gz
+
+
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-e1000e/archive?at=3.4.2.1&format=tgz&prefix=driver-intel-e1000e-3.4.2.1#/intel-e1000e-3.4.2.1.tar.gz) = 05d3f15a8641fea0ffc5e37caaedaae9070632bb
+
 
 BuildRequires: kernel-devel
 Provides: vendor-driver
