@@ -1,0 +1,32 @@
+From 6cd6dcb139c17ffcb9fa40f14d975b7c5c255b85 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 18:04:54 +0200
+Subject: [PATCH 8/9] Remove txqueue parameter for ndo_tx_timeout()
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This extra parameter was introduced after v4.19
+
+Signed-off-by: Thierry Escande <thierry.escande@vates.tech>
+---
+ src/netdev.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/netdev.c b/src/netdev.c
+index 72c419c..81a8d14 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -5918,9 +5918,8 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ /**
+  * e1000_tx_timeout - Respond to a Tx Hang
+  * @netdev: network interface device structure
+- * @txqueue: index of the hung queue (unused)
+  **/
+-static void e1000_tx_timeout(struct net_device *netdev, unsigned int __always_unused txqueue)
++static void e1000_tx_timeout(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 
+-- 
+2.47.2
+

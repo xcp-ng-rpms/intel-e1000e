@@ -1,0 +1,28 @@
+From 004fd81c6097f9d4c9b20a391c2863f3c52f8383 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 18:04:12 +0200
+Subject: [PATCH 7/9] Add missing define for falltrough
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+Signed-off-by: Thierry Escande <thierry.escande@vates.tech>
+---
+ src/defines.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/defines.h b/src/defines.h
+index 63c3c79..872e5d8 100644
+--- a/src/defines.h
++++ b/src/defines.h
+@@ -808,4 +808,8 @@
+ /* SerDes Control */
+ #define E1000_GEN_POLL_TIMEOUT          640
+ 
++#ifndef fallthrough
++#define fallthrough do {} while (0)
++#endif
++
+ #endif /* _E1000_DEFINES_H_ */
+-- 
+2.47.2
+

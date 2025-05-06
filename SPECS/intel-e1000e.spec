@@ -1,8 +1,3 @@
-%global package_speccommit 94a0296efe870fd361a9e56cf2c558ff91c2fdf2
-%global usver 3.8.7
-%global xsver 2
-%global xsrel %{xsver}%{?xscount}%{?xshash}
-%global package_srccommit 3.8.7
 %define vendor_name Intel
 %define vendor_label intel
 %define driver_name e1000e
@@ -20,10 +15,24 @@
 
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
-Version: 3.8.7
-Release: %{?xsrel}%{?dist}
+Version: 5.10.179
+Release: 1%{?dist}
 License: GPL
-Source0: intel-e1000e-3.8.7.tar.gz
+# Sources from drivers/net/ethernet/intel/e1000e of Linux kernel v5.10.179, last
+# release with patches for the e1000e driver in the 5.10.y branch
+# https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/net/ethernet/intel/e1000e?h=v5.10.179
+Source0: intel-e1000e-%{version}.tar.gz
+
+# XCP-ng specific patches
+Patch1000: 0001-Revert-e1000e-reject-unsupported-coalescing-params.patch
+Patch1001: 0002-Revert-e1000e-extend-PTP-gettime-function-to-read-sy.patch
+Patch1002: 0003-Revert-drivers-net-Call-cpu_latency_qos_-instead-of-.patch
+Patch1003: 0004-Revert-e1000-e-use-new-helper-tcp_v6_gso_csum_prep.patch
+Patch1004: 0005-Revert-net-move-skb-xmit_more-hint-to-softnet-data.patch
+Patch1005: 0006-Revert-PM-sleep-core-Rename-DPM_FLAG_NEVER_SKIP.patch
+Patch1006: 0007-Add-missing-define-for-falltrough.patch
+Patch1007: 0008-Remove-txqueue-parameter-for-ndo_tx_timeout.patch
+Patch1008: 0009-Add-missing-include-for-PCIE_LINK_STATE_L0S-1-define.patch
 
 BuildRequires: gcc
 BuildRequires: kernel-devel
@@ -69,6 +78,9 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
+* Tue May 06 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-1
+- Import sources from upstream kernel v5.10.179
+
 * Mon Feb 14 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 3.8.7-2
 - CP-38416: Enable static analysis
 
