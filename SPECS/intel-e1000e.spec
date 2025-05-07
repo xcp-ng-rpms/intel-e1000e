@@ -50,6 +50,9 @@ version %{kernel_version}.
 %autosetup -p1 -n %{name}-%{version}
 %{?_cov_prepare}
 
+# Set module version to upstream kernel release
+/usr/bin/echo 'MODULE_VERSION("%{version}");' >> src/netdev.c
+
 %build
 %{?_cov_wrap} %{make_build} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src KSRC=/lib/modules/%{kernel_version}/build modules
 
@@ -80,6 +83,7 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %changelog
 * Tue May 06 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-1
 - Import sources from upstream kernel v5.10.179
+- Set module version to upstream kernel release
 
 * Mon Feb 14 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 3.8.7-2
 - CP-38416: Enable static analysis
