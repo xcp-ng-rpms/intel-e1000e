@@ -1,0 +1,31 @@
+From 41067f3079900c58da5d30de29417a69e37a50a5 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 17:03:31 +0200
+Subject: [PATCH 4/9] Revert "e1000(e): use new helper tcp_v6_gso_csum_prep"
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This reverts commit 2b316fbc5ab424bf04f0b7aafab017551fd2b075.
+---
+ src/netdev.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/netdev.c b/src/netdev.c
+index daa4df0..bb78d27 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -5440,7 +5440,10 @@ static int e1000_tso(struct e1000_ring *tx_ring, struct sk_buff *skb,
+ 		cmd_length = E1000_TXD_CMD_IP;
+ 		ipcse = skb_transport_offset(skb) - 1;
+ 	} else if (skb_is_gso_v6(skb)) {
+-		tcp_v6_gso_csum_prep(skb);
++		ipv6_hdr(skb)->payload_len = 0;
++		tcp_hdr(skb)->check = ~csum_ipv6_magic(&ipv6_hdr(skb)->saddr,
++						       &ipv6_hdr(skb)->daddr,
++						       0, IPPROTO_TCP, 0);
+ 		ipcse = 0;
+ 	}
+ 	ipcss = skb_network_offset(skb);
+-- 
+2.47.2
+

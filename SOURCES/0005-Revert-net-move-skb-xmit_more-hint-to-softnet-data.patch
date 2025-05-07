@@ -1,0 +1,28 @@
+From 83735d786f5881ae7b672b8a7d23dc126960cfac Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 17:24:02 +0200
+Subject: [PATCH 5/9] Revert "net: move skb->xmit_more hint to softnet data"
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This reverts commit 6b16f9ee89b8d5709f24bc3ac89ae8b5452c0d7c.
+---
+ src/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/netdev.c b/src/netdev.c
+index bb78d27..e5052f6 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -5898,7 +5898,7 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 				     DIV_ROUND_UP(PAGE_SIZE,
+ 						  adapter->tx_fifo_limit) + 4));
+ 
+-		if (!netdev_xmit_more() ||
++		if (!skb->xmit_more ||
+ 		    netif_xmit_stopped(netdev_get_tx_queue(netdev, 0))) {
+ 			if (adapter->flags2 & FLAG2_PCIM2PCI_ARBITER_WA)
+ 				e1000e_update_tdt_wa(tx_ring,
+-- 
+2.47.2
+

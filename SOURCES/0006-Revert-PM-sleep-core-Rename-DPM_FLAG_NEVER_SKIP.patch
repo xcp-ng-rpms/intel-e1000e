@@ -1,0 +1,28 @@
+From b48faa80bd9b549d153ff1bb8313aa978ac54350 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 17:44:47 +0200
+Subject: [PATCH 6/9] Revert "PM: sleep: core: Rename DPM_FLAG_NEVER_SKIP"
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This reverts commit e07515563d010d8b32967634e8dc2fdc732c1aa6.
+---
+ src/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/netdev.c b/src/netdev.c
+index e5052f6..72c419c 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -7616,7 +7616,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	e1000_print_device_info(adapter);
+ 
+-	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NO_DIRECT_COMPLETE);
++	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_NEVER_SKIP);
+ 
+ 	if (pci_dev_run_wake(pdev) && hw->mac.type < e1000_pch_cnp)
+ 		pm_runtime_put_noidle(&pdev->dev);
+-- 
+2.47.2
+
