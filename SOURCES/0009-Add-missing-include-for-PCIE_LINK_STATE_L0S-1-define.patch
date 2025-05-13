@@ -1,0 +1,27 @@
+From 63c0c6a868a571a2efed12b6523e320515ec23f9 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 18:28:07 +0200
+Subject: [PATCH 9/9] Add missing include for PCIE_LINK_STATE_L0S|1 defines
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+Signed-off-by: Thierry Escande <thierry.escande@vates.tech>
+---
+ src/netdev.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/netdev.c b/src/netdev.c
+index 81a8d14..af2e2f8 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -7,6 +7,7 @@
+ #include <linux/types.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <linux/pci-aspm.h>
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/delay.h>
+-- 
+2.47.2
+

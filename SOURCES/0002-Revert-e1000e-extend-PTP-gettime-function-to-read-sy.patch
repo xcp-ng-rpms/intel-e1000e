@@ -1,0 +1,176 @@
+From 0486950571b44e062dac3ef2ddb781a291dcf04f Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 16:53:22 +0200
+Subject: [PATCH 2/9] Revert "e1000e: extend PTP gettime function to read
+ system clock"
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This reverts commit 98942d70538a16cdc06389456a4cd0ea62559432.
+---
+ src/e1000.h  |  3 ---
+ src/netdev.c | 42 ++++++++++--------------------------------
+ src/ptp.c    | 16 ++++++----------
+ 3 files changed, 16 insertions(+), 45 deletions(-)
+
+diff --git a/src/e1000.h b/src/e1000.h
+index 3178efd..bf8506a 100644
+--- a/src/e1000.h
++++ b/src/e1000.h
+@@ -506,9 +506,6 @@ extern const struct e1000_info e1000_es2_info;
+ void e1000e_ptp_init(struct e1000_adapter *adapter);
+ void e1000e_ptp_remove(struct e1000_adapter *adapter);
+ 
+-u64 e1000e_read_systim(struct e1000_adapter *adapter,
+-		       struct ptp_system_timestamp *sts);
+-
+ static inline s32 e1000_phy_hw_reset(struct e1000_hw *hw)
+ {
+ 	return hw->phy.ops.reset(hw);
+diff --git a/src/netdev.c b/src/netdev.c
+index b700663..cd50cae 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -4341,16 +4341,13 @@ void e1000e_reinit_locked(struct e1000_adapter *adapter)
+ /**
+  * e1000e_sanitize_systim - sanitize raw cycle counter reads
+  * @hw: pointer to the HW structure
+- * @systim: PHC time value read, sanitized and returned
+- * @sts: structure to hold system time before and after reading SYSTIML,
+- * may be NULL
++ * @systim: time value read, sanitized and returned
+  *
+  * Errata for 82574/82583 possible bad bits read from SYSTIMH/L:
+  * check to see that the time is incrementing at a reasonable
+  * rate and is a multiple of incvalue.
+  **/
+-static u64 e1000e_sanitize_systim(struct e1000_hw *hw, u64 systim,
+-				  struct ptp_system_timestamp *sts)
++static u64 e1000e_sanitize_systim(struct e1000_hw *hw, u64 systim)
+ {
+ 	u64 time_delta, rem, temp;
+ 	u64 systim_next;
+@@ -4360,9 +4357,7 @@ static u64 e1000e_sanitize_systim(struct e1000_hw *hw, u64 systim,
+ 	incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
+ 	for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
+ 		/* latch SYSTIMH on read of SYSTIML */
+-		ptp_read_system_prets(sts);
+ 		systim_next = (u64)er32(SYSTIML);
+-		ptp_read_system_postts(sts);
+ 		systim_next |= (u64)er32(SYSTIMH) << 32;
+ 
+ 		time_delta = systim_next - systim;
+@@ -4380,16 +4375,15 @@ static u64 e1000e_sanitize_systim(struct e1000_hw *hw, u64 systim,
+ }
+ 
+ /**
+- * e1000e_read_systim - read SYSTIM register
+- * @adapter: board private structure
+- * @sts: structure which will contain system time before and after reading
+- * SYSTIML, may be NULL
++ * e1000e_cyclecounter_read - read raw cycle counter (used by time counter)
++ * @cc: cyclecounter structure
+  **/
+-u64 e1000e_read_systim(struct e1000_adapter *adapter,
+-		       struct ptp_system_timestamp *sts)
++static u64 e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ {
++	struct e1000_adapter *adapter = container_of(cc, struct e1000_adapter,
++						     cc);
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 systimel, systimel_2, systimeh;
++	u32 systimel, systimeh;
+ 	u64 systim;
+ 	/* SYSTIMH latching upon SYSTIML read does not work well.
+ 	 * This means that if SYSTIML overflows after we read it but before
+@@ -4397,15 +4391,11 @@ u64 e1000e_read_systim(struct e1000_adapter *adapter,
+ 	 * will experience a huge non linear increment in the systime value
+ 	 * to fix that we test for overflow and if true, we re-read systime.
+ 	 */
+-	ptp_read_system_prets(sts);
+ 	systimel = er32(SYSTIML);
+-	ptp_read_system_postts(sts);
+ 	systimeh = er32(SYSTIMH);
+ 	/* Is systimel is so large that overflow is possible? */
+ 	if (systimel >= (u32)0xffffffff - E1000_TIMINCA_INCVALUE_MASK) {
+-		ptp_read_system_prets(sts);
+-		systimel_2 = er32(SYSTIML);
+-		ptp_read_system_postts(sts);
++		u32 systimel_2 = er32(SYSTIML);
+ 		if (systimel > systimel_2) {
+ 			/* There was an overflow, read again SYSTIMH, and use
+ 			 * systimel_2
+@@ -4418,23 +4408,11 @@ u64 e1000e_read_systim(struct e1000_adapter *adapter,
+ 	systim |= (u64)systimeh << 32;
+ 
+ 	if (adapter->flags2 & FLAG2_CHECK_SYSTIM_OVERFLOW)
+-		systim = e1000e_sanitize_systim(hw, systim, sts);
++		systim = e1000e_sanitize_systim(hw, systim);
+ 
+ 	return systim;
+ }
+ 
+-/**
+- * e1000e_cyclecounter_read - read raw cycle counter (used by time counter)
+- * @cc: cyclecounter structure
+- **/
+-static u64 e1000e_cyclecounter_read(const struct cyclecounter *cc)
+-{
+-	struct e1000_adapter *adapter = container_of(cc, struct e1000_adapter,
+-						     cc);
+-
+-	return e1000e_read_systim(adapter, NULL);
+-}
+-
+ /**
+  * e1000_sw_init - Initialize general software structures (struct e1000_adapter)
+  * @adapter: board private structure to initialize
+diff --git a/src/ptp.c b/src/ptp.c
+index f3f6713..67201b4 100644
+--- a/src/ptp.c
++++ b/src/ptp.c
+@@ -161,18 +161,14 @@ static int e1000e_phc_getcrosststamp(struct ptp_clock_info *ptp,
+ #endif/*CONFIG_E1000E_HWTS*/
+ 
+ /**
+- * e1000e_phc_gettimex - Reads the current time from the hardware clock and
+- *                       system clock
++ * e1000e_phc_gettime - Reads the current time from the hardware clock
+  * @ptp: ptp clock structure
+- * @ts: timespec structure to hold the current PHC time
+- * @sts: structure to hold the current system time
++ * @ts: timespec structure to hold the current time value
+  *
+  * Read the timecounter and return the correct value in ns after converting
+  * it into a struct timespec.
+  **/
+-static int e1000e_phc_gettimex(struct ptp_clock_info *ptp,
+-			       struct timespec64 *ts,
+-			       struct ptp_system_timestamp *sts)
++static int e1000e_phc_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
+ {
+ 	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
+ 						     ptp_clock_info);
+@@ -181,8 +177,8 @@ static int e1000e_phc_gettimex(struct ptp_clock_info *ptp,
+ 
+ 	spin_lock_irqsave(&adapter->systim_lock, flags);
+ 
+-	/* NOTE: Non-monotonic SYSTIM readings may be returned */
+-	cycles = e1000e_read_systim(adapter, sts);
++	/* Use timecounter_cyc2time() to allow non-monotonic SYSTIM readings */
++	cycles = adapter->cc.read(&adapter->cc);
+ 	ns = timecounter_cyc2time(&adapter->tc, cycles);
+ 
+ 	spin_unlock_irqrestore(&adapter->systim_lock, flags);
+@@ -262,7 +258,7 @@ static const struct ptp_clock_info e1000e_ptp_clock_info = {
+ 	.pps		= 0,
+ 	.adjfreq	= e1000e_phc_adjfreq,
+ 	.adjtime	= e1000e_phc_adjtime,
+-	.gettimex64	= e1000e_phc_gettimex,
++	.gettime64	= e1000e_phc_gettime,
+ 	.settime64	= e1000e_phc_settime,
+ 	.enable		= e1000e_phc_enable,
+ };
+-- 
+2.47.2
+

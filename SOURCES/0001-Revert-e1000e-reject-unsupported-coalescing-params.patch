@@ -1,0 +1,27 @@
+From d58dd63cd9bd95867aaaf3f09077ff0f19f2aa9a Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 6 May 2025 16:52:59 +0200
+Subject: [PATCH 1/9] Revert "e1000e: reject unsupported coalescing params"
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This reverts commit f9f12f57e2a51c80b79aae440810e42fa669476e.
+---
+ src/ethtool.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/ethtool.c b/src/ethtool.c
+index 06442e6..c48ddaf 100644
+--- a/src/ethtool.c
++++ b/src/ethtool.c
+@@ -2350,7 +2350,6 @@ static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
+ }
+ 
+ static const struct ethtool_ops e1000_ethtool_ops = {
+-	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
+ 	.get_drvinfo		= e1000_get_drvinfo,
+ 	.get_regs_len		= e1000_get_regs_len,
+ 	.get_regs		= e1000_get_regs,
+-- 
+2.47.2
+
