@@ -1,0 +1,64 @@
+
+##########
+## NOTE ##
+##########
+## This depends on RPM build adding DRV_VERSION to e1000.h
+##
+## Must be included in spec file:
+##   /usr/bin/echo '#define DRV_VERSION "%{version}"' >> src/e1000.h
+##
+
+--- a/src/e1000.h	2025-02-10 21:44:29.686651623 +0000
++++ b/src/e1000.h	2025-02-10 21:44:47.630509849 +0000
+@@ -462,6 +462,7 @@
+ };
+ 
+ extern char e1000e_driver_name[];
++extern const char e1000e_driver_version[];
+ 
+ void e1000e_check_options(struct e1000_adapter *adapter);
+ void e1000e_set_ethtool_ops(struct net_device *netdev);
+--- a/src/netdev.c	2025-02-01 17:22:34.000000000 +0000
++++ b/src/netdev.c	2025-02-10 21:44:13.514779395 +0000
+@@ -29,7 +29,11 @@
+ 
+ #include "e1000.h"
+ 
++
++/* DRV_VERSION is added to e1000.h by RPM build from spec file */
++
+ char e1000e_driver_name[] = "e1000e";
++const char e1000e_driver_version[] = DRV_VERSION;
+ 
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+ static int debug = -1;
+@@ -7892,7 +7894,8 @@
+  **/
+ static int __init e1000_init_module(void)
+ {
+-	pr_info("Intel(R) PRO/1000 Network Driver\n");
++	pr_info("Intel(R) PRO/1000 Network Driver - %s\n",
++		e1000e_driver_version);
+ 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
+ 
+ 	return pci_register_driver(&e1000_driver);
+--- a/src/ethtool.c	2025-02-10 22:54:56.357243978 +0000
++++ b/src/ethtool.c	2025-02-10 22:56:41.844412135 +0000
+@@ -640,6 +640,8 @@
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 
+ 	strlcpy(drvinfo->driver, e1000e_driver_name, sizeof(drvinfo->driver));
++	strlcpy(drvinfo->version, e1000e_driver_version,
++		sizeof(drvinfo->version));
+ 
+ 	/* EEPROM image version # is reported as firmware version # for
+ 	 * PCI-E controllers
+--- a/src/netdev.c	2025-02-10 23:19:32.317161356 +0000
++++ b/src/netdev.c	2025-02-10 23:25:36.458229910 +0000
+@@ -7910,5 +7910,6 @@
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
+ MODULE_LICENSE("GPL v2");
++MODULE_VERSION(DRV_VERSION);
+ 
+ /* netdev.c */
