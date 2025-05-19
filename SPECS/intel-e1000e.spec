@@ -82,7 +82,7 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
-* Tue May 19 2025 Andrew Lindh <andrew@netplex.net> - 5.10.179-2
+* Mon May 19 2025 Andrew Lindh <andrew@netplex.net> - 5.10.179-2
 - Add show version for ethtool
 
 * Tue May 06 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-1
