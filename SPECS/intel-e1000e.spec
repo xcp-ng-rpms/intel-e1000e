@@ -16,7 +16,7 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 5.10.179
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 # Sources from drivers/net/ethernet/intel/e1000e of Linux kernel v5.10.179, last
 # release with patches for the e1000e driver in the 5.10.y branch
@@ -33,6 +33,7 @@ Patch1005: 0006-Revert-PM-sleep-core-Rename-DPM_FLAG_NEVER_SKIP.patch
 Patch1006: 0007-Add-missing-define-for-falltrough.patch
 Patch1007: 0008-Remove-txqueue-parameter-for-ndo_tx_timeout.patch
 Patch1008: 0009-Add-missing-include-for-PCIE_LINK_STATE_L0S-1-define.patch
+Patch1009: 0001-Add-support-to-set-module-version.patch
 
 BuildRequires: gcc
 BuildRequires: kernel-devel
@@ -51,7 +52,7 @@ version %{kernel_version}.
 %{?_cov_prepare}
 
 # Set module version to upstream kernel release
-/usr/bin/echo 'MODULE_VERSION("%{version}");' >> src/netdev.c
+sed -e 's|@@DRV_VERSION@@|%{version}|' -i src/e1000.h
 
 %build
 %{?_cov_wrap} %{make_build} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src KSRC=/lib/modules/%{kernel_version}/build modules
@@ -81,6 +82,9 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
+* Tue May 20 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-2
+- Fix module version reported by modinfo and ethtool
+
 * Tue May 06 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-1
 - Import sources from upstream kernel v5.10.179
 - Set module version to upstream kernel release

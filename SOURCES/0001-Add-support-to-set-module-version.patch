@@ -1,0 +1,68 @@
+From bcb70e9c7eb8ffb5ca5302a0b289af270b89cdd7 Mon Sep 17 00:00:00 2001
+From: Thierry Escande <thierry.escande@vates.tech>
+Date: Tue, 20 May 2025 10:59:17 +0200
+Subject: [PATCH] Add support to set module version
+Content-Type: text/plain; charset = "utf-8"
+Content-Transfert-Encoding: 8bit
+
+This patch adds the DRV_VERSION macro used to report the module version
+by both modinfo and ethtool.
+
+The macro has to be set to the correct version from the specfile using
+sed.
+
+Based on patch from Andrew Lindh <andrew@netplex.net>
+
+Signed-off-by: Thierry Escande <thierry.escande@vates.tech>
+---
+ src/e1000.h   | 2 ++
+ src/ethtool.c | 1 +
+ src/netdev.c  | 4 +++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/e1000.h b/src/e1000.h
+index bf8506a..cd87181 100644
+--- a/src/e1000.h
++++ b/src/e1000.h
+@@ -587,4 +587,6 @@ void __ew32(struct e1000_hw *hw, unsigned long reg, u32 val);
+ #define E1000_READ_REG_ARRAY(a, reg, offset) \
+ 	(readl((a)->hw_addr + reg + ((offset) << 2)))
+ 
++#define DRV_VERSION "@@DRV_VERSION@@"
++
+ #endif /* _E1000_H_ */
+diff --git a/src/ethtool.c b/src/ethtool.c
+index c48ddaf..81d2a88 100644
+--- a/src/ethtool.c
++++ b/src/ethtool.c
+@@ -640,6 +640,7 @@ static void e1000_get_drvinfo(struct net_device *netdev,
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 
+ 	strlcpy(drvinfo->driver, e1000e_driver_name, sizeof(drvinfo->driver));
++	strlcpy(drvinfo->version, DRV_VERSION, sizeof(drvinfo->version));
+ 
+ 	/* EEPROM image version # is reported as firmware version # for
+ 	 * PCI-E controllers
+diff --git a/src/netdev.c b/src/netdev.c
+index af2e2f8..d1b9028 100644
+--- a/src/netdev.c
++++ b/src/netdev.c
+@@ -7874,7 +7874,7 @@ static struct pci_driver e1000_driver = {
+  **/
+ static int __init e1000_init_module(void)
+ {
+-	pr_info("Intel(R) PRO/1000 Network Driver\n");
++	pr_info("Intel(R) PRO/1000 Network Driver - %s\n", DRV_VERSION);
+ 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
+ 
+ 	return pci_register_driver(&e1000_driver);
+@@ -7897,4 +7897,6 @@ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION("Intel(R) PRO/1000 Network Driver");
+ MODULE_LICENSE("GPL v2");
+ 
++MODULE_VERSION(DRV_VERSION);
++
+ /* netdev.c */
+-- 
+2.47.2
+
