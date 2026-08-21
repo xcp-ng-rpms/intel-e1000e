@@ -16,7 +16,10 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 5.10.179
-Release: 2%{?dist}
+Release: 3%{?dist}
+# Built against new kABI after cip rebase
+Requires: xcpng-kernel-kabi = 4.19.325-cip134+
+
 License: GPL
 # Sources from drivers/net/ethernet/intel/e1000e of Linux kernel v5.10.179, last
 # release with patches for the e1000e driver in the 5.10.y branch
@@ -82,6 +85,9 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
+* Mon Aug 31 2026 Quentin Casasnovas <quentin.casasnovas@vates.tech> - 5.10.179-3
+- Rebuild for kernel v4.19.325-cip134
+
 * Tue May 20 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-2
 - Fix module version reported by modinfo and ethtool
 
