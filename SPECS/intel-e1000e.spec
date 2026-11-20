@@ -16,7 +16,7 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 5.10.179
-Release: 2.0.kernelpreview.1%{?dist}
+Release: 2.0.kernelpreview.1.0.testv0.1%{?dist}
 License: GPL
 # Sources from drivers/net/ethernet/intel/e1000e of Linux kernel v5.10.179, last
 # release with patches for the e1000e driver in the 5.10.y branch
