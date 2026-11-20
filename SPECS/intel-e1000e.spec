@@ -16,7 +16,7 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 5.10.179
-Release: 2%{?dist}
+Release: 2.0.kernelpreview.1%{?dist}
 License: GPL
 # Sources from drivers/net/ethernet/intel/e1000e of Linux kernel v5.10.179, last
 # release with patches for the e1000e driver in the 5.10.y branch
@@ -36,7 +36,7 @@ Patch1008: 0009-Add-missing-include-for-PCIE_LINK_STATE_L0S-1-define.patch
 Patch1009: 0001-Add-support-to-set-module-version.patch
 
 BuildRequires: gcc
-BuildRequires: kernel-devel
+BuildRequires: kernel-devel >= 4.19.325-cip137.8.0.46.16
 %{?_cov_buildrequires}
 Provides: vendor-driver
 Requires: kernel-uname-r = %{kernel_version}
@@ -82,6 +82,9 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
+* Mon Nov 16 2026 Quentin Casasnovas <quentin.casasnovas@vates.tech> - 5.10.179-2.0.kernelpreview.1
+- Rebuild for kernel v4.19.325-cip137
+
 * Tue May 20 2025 Thierry Escande <thierry.escande@vates.tech> - 5.10.179-2
 - Fix module version reported by modinfo and ethtool
 
